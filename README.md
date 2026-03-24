@@ -59,9 +59,31 @@ git clone https://github.com/sauleamihai/Lift_HDL_model.git
 
 ---
 
-## Semnale importante in waveform
+## Configuratie waveform (recomandat)
 
-Dupa ce simularea porneste, adauga urmatoarele semnale din **Scope**:
+Fisierul `waves/lift_waves.wcfg` contine toate semnalele importante pre-configurate.
+
+### Metoda 1 — Incarcare automata (cea mai simpla)
+1. Dupa ce simularea porneste, in **TCL Console** (jos in Vivado) scrie:
+```tcl
+open_wave_config {C:/calea/ta/Lift_HDL_model/waves/lift_waves.wcfg}
+```
+Inlocuieste `C:/calea/ta/` cu calea unde ai clonat repo-ul.
+
+### Metoda 2 — Adaugare in proiect (se incarca automat la fiecare simulare)
+1. **Sources** → click **"+"** → **Add or create simulation sources**
+2. **Add Files** → naviga la `waves/` → selecteaza `lift_waves.wcfg`
+3. Click **Finish** — Vivado il va incarca automat de acum inainte
+
+### Metoda 3 — Din meniul Vivado
+1. In fereastra waveform → **File → Open Waveform Configuration**
+2. Naviga la `waves/lift_waves.wcfg`
+
+---
+
+## Semnale incluse in waveform
+
+Fisierul `.wcfg` contine deja toate semnalele relevante:
 
 ```
 testbench/DUT/u_lift_apb/u_lift/

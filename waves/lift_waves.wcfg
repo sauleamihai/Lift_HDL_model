@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="testbench_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_testbench_sv " />
+            <top_module name="glbl" />
+            <top_module name="std" />
+            <top_module name="testbench" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="730.624 ns"></ZoomEndTime>
+      <Cursor1Time time="25.018 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="177"></NameColumnWidth>
+      <ValueColumnWidth column_width="147"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="14" />
+   <wvobject fp_name="/testbench/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/floor_management" type="array">
+      <obj_property name="ElementShortName">floor_management[7:0]</obj_property>
+      <obj_property name="ObjectShortName">floor_management[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/output_intf/various_signals" type="array">
+      <obj_property name="ElementShortName">various_signals[7:0]</obj_property>
+      <obj_property name="ObjectShortName">various_signals[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/current_floor_reg" type="array">
+      <obj_property name="ElementShortName">current_floor_reg[2:0]</obj_property>
+      <obj_property name="ObjectShortName">current_floor_reg[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/state" type="array">
+      <obj_property name="ElementShortName">state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/destination" type="array">
+      <obj_property name="ElementShortName">destination[2:0]</obj_property>
+      <obj_property name="ObjectShortName">destination[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/direction" type="logic">
+      <obj_property name="ElementShortName">direction</obj_property>
+      <obj_property name="ObjectShortName">direction</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/request_reg" type="array">
+      <obj_property name="ElementShortName">request_reg[7:0]</obj_property>
+      <obj_property name="ObjectShortName">request_reg[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/DUT/u_lift_apb/u_lift/pending_count" type="array">
+      <obj_property name="ElementShortName">pending_count[3:0]</obj_property>
+      <obj_property name="ObjectShortName">pending_count[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/req_ack_intf/buton_lift" type="array">
+      <obj_property name="ElementShortName">buton_lift[7:0]</obj_property>
+      <obj_property name="ObjectShortName">buton_lift[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/req_ack_intf/buton_scara" type="array">
+      <obj_property name="ElementShortName">buton_scara[7:0]</obj_property>
+      <obj_property name="ObjectShortName">buton_scara[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/req_ack_intf/led_lift" type="array">
+      <obj_property name="ElementShortName">led_lift[7:0]</obj_property>
+      <obj_property name="ObjectShortName">led_lift[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/req_ack_intf/led_scara" type="array">
+      <obj_property name="ElementShortName">led_scara[7:0]</obj_property>
+      <obj_property name="ObjectShortName">led_scara[7:0]</obj_property>
+   </wvobject>
+</wave_config>
