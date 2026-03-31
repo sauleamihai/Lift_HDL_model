@@ -57,5 +57,36 @@ interface apb_interface(input logic clk, input logic reset);
   a_penable_clears: assert property(p_penable_clears_after_ready)
     else $error("APB VIOLATION: PENABLE nu s-a dezactivat dupa PREADY");
   c_penable_clears: cover property(p_penable_clears_after_ready);
+  
 
+    // PREADY poate fi activ DOAR in faza ACCESS (PSEL=1 si PENABLE=1)
+    property p_pready_only_in_access;
+        @(posedge clk) disable iff (!reset)
+        PREADY |-> (PSEL && PENABLE);
+    endproperty
+    a_pready_only_in_access: assert property(p_pready_only_in_access)
+        else $error("APB VIOLATION: PREADY activ in afara fazei ACCESS");
+    c_pready_only_in_access: cover property(p_pready_only_in_access);
+
+    
+    // Transferul trebuie sa se finalizeze in maxim N cicluri (fara wait states infinite)
+    property p_transfer_completes;
+        @(posedge clk) disable iff (!reset)
+        (PSEL && PENABLE && !PREADY) |-> ##[1:8] PREADY;
+    endproperty
+    a_transfer_completes: assert property(p_transfer_completes)
+        else $error("APB VIOLATION: Transferul nu s-a finalizat in 8 cicluri");
+    c_transfer_completes: cover property(p_transfer_completes);
+
+    
+    // PWDATA trebuie sa fie stabil pe toata durata fazei ACCESS (write)
+    property p_pwdata_stable_on_write;
+        @(posedge clk) disable iff (!reset)
+        (PSEL && PENABLE && PWRITE) |-> $stable(PWDATA);
+    endproperty
+    a_pwdata_stable: assert property(p_pwdata_stable_on_write)
+        else $error("APB VIOLATION: PWDATA s-a schimbat in timpul unui transfer de scriere");
+    c_pwdata_stable: cover property(p_pwdata_stable_on_write);
+
+   
 endinterface
