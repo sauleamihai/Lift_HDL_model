@@ -31,15 +31,20 @@ class environment;
   virtual output_interface   out_interf;
   virtual apb_interface      apb_interf;
   virtual req_ack_interface  req_ack_interf;
+  virtual obstacle_interface obstacle_interf;
 
   function new(
-      virtual output_interface  out_interf,
-      virtual apb_interface     apb_interf,
-      virtual req_ack_interface req_ack_interf
+      virtual output_interface   out_interf,
+      virtual apb_interface      apb_interf,
+      virtual req_ack_interface  req_ack_interf,
+      virtual obstacle_interface obstacle_interf
   );
-    this.out_interf     = out_interf;
-    this.apb_interf     = apb_interf;
-    this.req_ack_interf = req_ack_interf;
+    this.out_interf      = out_interf;
+    this.apb_interf      = apb_interf;
+    this.req_ack_interf  = req_ack_interf;
+    this.obstacle_interf = obstacle_interf;
+    // Implicit: obstacol inactiv la start
+    obstacle_interf.req  = 1'b0;
 
     apb_gen2driv    = new();
     apb_mon2scb     = new();

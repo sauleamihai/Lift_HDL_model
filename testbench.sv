@@ -11,6 +11,7 @@
 `include "output_interface.sv"
 `include "apb_interface.sv"
 `include "req_ack_interface.sv"
+`include "obstacle_interface.sv"
 `include "design.sv"
 
 //-------------------------[NOTE]---------------------------------
@@ -47,9 +48,11 @@ module testbench;
   req_ack_interface req_ack_intf(clk,reset);
   // interfata pentru apb
   apb_interface apb_intf(clk,reset);
+  // interfata senzor obstacol
+  obstacle_interface obstacle_intf(clk,reset);
 
   //Testcase instance, interface handle is passed to test as an argument
-  test test_7(output_intf, apb_intf, req_ack_intf);
+  test test_7(output_intf, apb_intf, req_ack_intf, obstacle_intf);
 
   //DUT instance, interface signals are connected to the DUT ports
   top DUT (
@@ -67,6 +70,8 @@ module testbench;
 
     .buton_scara(req_ack_intf.buton_scara),
     .buton_lift(req_ack_intf.buton_lift),
+    .obstacle_req(obstacle_intf.req),
+    .obstacle_ack(obstacle_intf.ack),
     .various_signals(output_intf.various_signals),
     .floor_management(output_intf.floor_management),
     .led_lift(req_ack_intf.led_lift),

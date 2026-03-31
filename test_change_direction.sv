@@ -3,13 +3,14 @@
 
 `include "environment.sv"
 
-module test(output_interface  output_intf,
-             apb_interface     apb_intf,
-             req_ack_interface req_ack_intf);
+module test(output_interface   output_intf,
+             apb_interface      apb_intf,
+             req_ack_interface  req_ack_intf,
+             obstacle_interface obstacle_intf);
 
   environment env;
   initial begin
-    env = new(output_intf, apb_intf, req_ack_intf);
+    env = new(output_intf, apb_intf, req_ack_intf, obstacle_intf);
 
     env.apb_gen.random_transaction    = 0;
     env.gen_button.random_generation  = 0;
@@ -20,6 +21,9 @@ module test(output_interface  output_intf,
 
     // După 12 cicluri (când e „pe drum") se solicită etajul 1 din cabina liftului
     env.gen_button.write_buttons(1, /*is_lift_btn=*/1, /*delay=*/12);
+    
+    env.apb_gen.write_reg(1, 8'h40);
+    env.apb_gen.read_reg(1);
 
     // ========= AȘTEPTĂRI =========
     // Trebuie să se oprească la 4, apoi la 1

@@ -7,11 +7,13 @@ module lift(
     input rst_n,
     input [7:0] buton_scara,
     input [7:0] buton_lift,
+    input        obstacle_req,   // senzor obstacol: 1 = obstacol detectat in usa
 
     output reg [7:0] various_signals,
     output reg [7:0] floor_management,
     output reg [7:0] led_lift,
-    output reg [7:0] led_scara
+    output reg [7:0] led_scara,
+    output reg       obstacle_ack  // DUT confirma: usa este tinuta deschisa
 );
 
   localparam NUM_FLOORS = 8;
@@ -127,6 +129,7 @@ module lift(
       error_reg              <= 1'b0;
       led_lift               <= 8'b0;
       led_scara              <= 8'b0;
+      obstacle_ack           <= 1'b0;
     end else begin
       // Inregistreaza cereri noi
       request_reg <= request_reg | buton_scara | buton_lift;
@@ -135,7 +138,7 @@ module lift(
       // A) Aprinde imediat la apasare buton
       led_lift  <= led_lift  | buton_lift;
       led_scara <= led_scara | buton_scara;
-      // C) Stinge cand usa se deschide la etajul curent (ultima asignare castiga)
+      // B) Stinge cand usa se deschide la etajul curent (ultima asignare castiga)
       if (state == STATE_DOOR_OPEN) begin
         led_lift[current_floor_reg]  <= 1'b0;
         led_scara[current_floor_reg] <= 1'b0;
@@ -194,11 +197,18 @@ module lift(
           end
 
           STATE_DOOR_OPEN: begin
-            if (door_counter < DOOR_OPEN_CYCLES)
-              door_counter <= door_counter + 1;
-            else begin
+            if (obstacle_req) begin
+              // Obstacol detectat: reseteaza timerul si confirma prin ACK
               door_counter <= 0;
-              state        <= STATE_IDLE;
+              obstacle_ack <= 1'b1;
+            end else begin
+              obstacle_ack <= 1'b0;
+              if (door_counter < DOOR_OPEN_CYCLES)
+                door_counter <= door_counter + 1;
+              else begin
+                door_counter <= 0;
+                state        <= STATE_IDLE;
+              end
             end
           end
 

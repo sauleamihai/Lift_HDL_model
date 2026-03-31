@@ -13,6 +13,10 @@ module lift_apb (
     input  wire [7:0]  buton_scara,
     input  wire [7:0]  buton_lift,
 
+    // Senzor obstacol (de la obstacle_interface)
+    input  wire        obstacle_req,
+    output wire        obstacle_ack,
+
     // Iesiri directe ale liftului
     output wire [7:0]  various_signals,
     output wire [7:0]  floor_management,
@@ -43,10 +47,12 @@ module lift_apb (
       .rst_n           (PRESETn),
       .buton_scara     (buton_scara | apb_buton_scara_reg),
       .buton_lift      (buton_lift  | apb_buton_lift_reg),
+      .obstacle_req    (obstacle_req),
       .various_signals (various_signals),
       .floor_management(floor_management),
       .led_lift        (led_lift),
-      .led_scara       (led_scara)
+      .led_scara       (led_scara),
+      .obstacle_ack    (obstacle_ack)
   );
 
   assign PSLVERR = 1'b0;

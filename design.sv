@@ -10,6 +10,8 @@
 module top(
     input wire [7:0]  buton_scara,
     input wire [7:0]  buton_lift,
+    input wire        obstacle_req,
+    output wire       obstacle_ack,
 
     output wire [7:0] various_signals,
     output wire [7:0] floor_management,
@@ -32,6 +34,8 @@ module top(
   lift_apb u_lift_apb(
     .buton_scara      (buton_scara),
     .buton_lift       (buton_lift),
+    .obstacle_req     (obstacle_req),
+    .obstacle_ack     (obstacle_ack),
     .various_signals  (various_signals),
     .floor_management (floor_management),
     .led_lift         (led_lift),
