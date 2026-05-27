@@ -18,7 +18,7 @@ class tranzactie_req_ack extends uvm_sequence_item;
 
   // ── ACK: raspunsul DUT-ului (capturat de monitor) ──────────────────
   bit ack_primit;             // 1 daca obstacle_ack a urmat REQ in 1 ciclu
-  int cicli_pana_la_ack;      // latenta ACK in cicluri de ceas
+  rand int cicli_pana_la_ack;      // latenta ACK in cicluri de ceas
   int cicli_pana_la_ack_clear; // cicluri pana la dezactivarea ACK dupa REQ
 
   // ── Constrangeri ───────────────────────────────────────────────────
@@ -26,12 +26,12 @@ class tranzactie_req_ack extends uvm_sequence_item;
   // Obstacol mediu: 4-6 cicluri (cat DOOR_OPEN_CYCLES)
   // Obstacol lung:  7-15 cicluri (mult mai mult decat DOOR_OPEN_CYCLES)
   constraint durata_c {
-    soft durata_obstacol inside {[1:15]};
+    soft cicli_pana_la_ack inside {[1:15]};
   }
 
   // Distributie ponderata intre cele 3 categorii de durata
   constraint distributie_c {
-    durata_obstacol dist {
+    cicli_pana_la_ack dist {
       [1:3]  :/ 30,   // scurt
       [4:6]  :/ 40,   // mediu
       [7:15] :/ 30    // lung

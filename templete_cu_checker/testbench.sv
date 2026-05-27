@@ -8,6 +8,9 @@ import uvm_pkg::*;
 `include "iesire_interface_dut.sv"
 `include "test_exemplu.sv"
 `include "test_lift_ocupat.sv"
+`include "test_urgenta.sv"
+`include "test_citire_registre.sv"
+`include "test_combinat.sv"
 `include "design.sv"
 
 module top();
@@ -18,7 +21,9 @@ module top();
   // ── Generare Ceas FIXA (Fara macrouri, folosind unitati explicite) ──
   initial begin
     $dumpfile("dump.vcd");
-    $dumpvars;
+    // Dump pe nivele: 0 = tot, 1 = doar top, etc.
+    // Cu modul si nivel 0, primesti tot ierarhic
+    $dumpvars(0, top);
     clk = 0;
     forever begin
       #5ns; // Explicit 5 nanoseconds. Previne bucla Time 0!
@@ -56,7 +61,7 @@ module top();
     uvm_config_db#(virtual req_ack_interface_dut)::set(null, "*", "req_ack_interface_dut", intf_req_ack);
     uvm_config_db#(virtual iesire_interface_dut)::set(null, "*", "iesire_interface_dut", intf_iesire);
 
-    run_test("test_lift_ocupat");
+    run_test("test_urgenta");
   end
 
              

@@ -32,6 +32,22 @@ class scoreboard extends uvm_scoreboard;
   int erori_detectate;
   int verificari_trecute;
 
+  // ── Shadow registers pentru test_citire_registre ────────────────────
+  //    Tinem evidenta ultimei valori scrise la 0x00 si 0x01.
+  //    -1 = nescris inca (PRDATA poate fi orice valoare la prima citire).
+  bit [7:0] shadow_buton_scara_reg;
+  bit [7:0] shadow_buton_lift_reg;
+  bit       shadow_scara_initializat;
+  bit       shadow_lift_initializat;
+
+  // ── Tracker pentru test_urgenta ─────────────────────────────────────
+  //    Detectam intrarea/iesirea din starea de urgenta si validam
+  //    ca liftul a coborat la etaj 0 si pending a ajuns la 0.
+  bit       in_urgenta;
+  int       cicli_in_urgenta;
+  int       max_cicli_in_urgenta = 200;  // limit superior
+  bit       a_atins_etaj_0_in_urgenta;
+
   function new(string name = "scoreboard", uvm_component parent = null);
     super.new(name, parent);
     port_pentru_datele_de_la_apb     = new("port_apb",     this);
@@ -39,6 +55,13 @@ class scoreboard extends uvm_scoreboard;
     port_pentru_datele_de_la_iesire  = new("port_iesire",  this);
     erori_detectate   = 0;
     verificari_trecute = 0;
+    shadow_buton_scara_reg   = 8'h00;
+    shadow_buton_lift_reg    = 8'h00;
+    shadow_scara_initializat = 1'b0;
+    shadow_lift_initializat  = 1'b0;
+    in_urgenta               = 1'b0;
+    cicli_in_urgenta         = 0;
+    a_atins_etaj_0_in_urgenta = 1'b0;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
@@ -55,12 +78,93 @@ class scoreboard extends uvm_scoreboard;
     ultima_tranzactie_apb = tr.copy();
     coada_apb.push_back(ultima_tranzactie_apb);
 
-    // Verificare: scriere la adresa invalida nu trebuie sa afecteze starea
+    // ── Verificare 1: scriere la adresa RO nu este permisa ─────────
     if (tr.rw == 1'b1 && tr.addr > 8'h01)
       `uvm_error("SCOREBOARD",
         $sformatf("Scriere la adresa read-only 0x%02h detectata!", tr.addr))
 
+    // ── Pentru SCRIERI: actualizam shadow registers (test_citire) ──
+    if (tr.rw == 1'b1) begin
+      case (tr.addr)
+        8'h00: begin
+          shadow_buton_scara_reg   = tr.data;
+          shadow_scara_initializat = 1'b1;
+          `uvm_info("SCOREBOARD",
+            $sformatf("Shadow: buton_scara_reg <= 0x%02h", tr.data), UVM_HIGH)
+        end
+        8'h01: begin
+          shadow_buton_lift_reg    = tr.data;
+          shadow_lift_initializat  = 1'b1;
+          `uvm_info("SCOREBOARD",
+            $sformatf("Shadow: buton_lift_reg <= 0x%02h", tr.data), UVM_HIGH)
+        end
+        default: ;
+      endcase
+    end
+
+    // ── Pentru CITIRI: verificam consistenta (test_citire_registre) ─
+    if (tr.rw == 1'b0) begin
+      verifica_citire_apb(tr);
+    end
+
     verifica_consistenta_apb_iesire(tr);
+  endfunction
+
+  // ── Verificare CITIRI APB (pentru test_citire_registre) ─────────────
+  function void verifica_citire_apb(tranzactie_apb tr);
+    // Verificare: PRDATA nu trebuie sa fie X
+    if ($isunknown(tr.data)) begin
+      `uvm_error("SCOREBOARD",
+        $sformatf("CITIRE: PRDATA contine X la addr=0x%02h", tr.addr))
+      erori_detectate++;
+      return;
+    end
+
+    case (tr.addr)
+      8'h00: begin
+        // RW register: citirea trebuie sa returneze ultima scriere
+        if (shadow_scara_initializat && (tr.data !== shadow_buton_scara_reg)) begin
+          `uvm_error("SCOREBOARD",
+            $sformatf("CITIRE 0x00: asteptat=0x%02h, citit=0x%02h",
+                      shadow_buton_scara_reg, tr.data))
+          erori_detectate++;
+        end else if (shadow_scara_initializat) begin
+          `uvm_info("SCOREBOARD",
+            $sformatf("CITIRE 0x00 OK: data=0x%02h matches shadow", tr.data), UVM_HIGH)
+          verificari_trecute++;
+        end
+      end
+      8'h01: begin
+        if (shadow_lift_initializat && (tr.data !== shadow_buton_lift_reg)) begin
+          `uvm_error("SCOREBOARD",
+            $sformatf("CITIRE 0x01: asteptat=0x%02h, citit=0x%02h",
+                      shadow_buton_lift_reg, tr.data))
+          erori_detectate++;
+        end else if (shadow_lift_initializat) begin
+          `uvm_info("SCOREBOARD",
+            $sformatf("CITIRE 0x01 OK: data=0x%02h matches shadow", tr.data), UVM_HIGH)
+          verificari_trecute++;
+        end
+      end
+      8'h02, 8'h03, 8'h04, 8'h05: begin
+        // RO registers: nu putem verifica valoarea exacta (depinde de stare),
+        // dar verificam ca nu e X (deja facut mai sus)
+        verificari_trecute++;
+      end
+      default: begin
+        // Adrese invalide (0x06+): DUT-ul intoarce 0xFF
+        if (tr.data !== 8'hFF) begin
+          `uvm_error("SCOREBOARD",
+            $sformatf("CITIRE addr invalida 0x%02h: asteptat=0xFF, citit=0x%02h",
+                      tr.addr, tr.data))
+          erori_detectate++;
+        end else begin
+          `uvm_info("SCOREBOARD",
+            $sformatf("CITIRE addr invalida 0x%02h OK: returneaza 0xFF", tr.addr), UVM_HIGH)
+          verificari_trecute++;
+        end
+      end
+    endcase
   endfunction
 
   // ── Handler tranzactii REQ/ACK obstacol ─────────────────────────────

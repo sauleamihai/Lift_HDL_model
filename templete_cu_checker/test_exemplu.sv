@@ -50,7 +50,8 @@ class test_exemplu extends uvm_test;
     super.run_phase(phase);
     
     phase.raise_objection(this);
-
+    #10;
+apply_reset();
     #10;
     `uvm_info("TEST", "Asteptam eliberarea resetului hardware...", UVM_NONE)
 
@@ -109,6 +110,15 @@ class test_exemplu extends uvm_test;
     end
     $display("╚══════════════════════════════════════════╝");
   endfunction
+
+   task apply_reset();
+    vif_apb.paddr    <= 0;
+    vif_apb.penable  <= 0;
+    vif_apb.psel     <= 0;
+    vif_apb.pwrite   <= 0;
+    vif_apb.pwdata   <= 0;
+    vif_req_ack.obstacle_req <= 0;
+  endtask
 
 endclass
 

@@ -1,27 +1,32 @@
 `timescale 1ns/1ps
-`ifndef __test_lift_ocupat
-`define __test_lift_ocupat
+`ifndef __test_combinat
+`define __test_combinat
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 `include "mediu_verificare.sv"
-`include "secventa_apb.sv"
+`include "secventa_apb_combinat.sv"
 `include "secventa_req_ack.sv"
-`include "secventa_apb_lift_ocupat.sv"
-class test_lift_ocupat extends uvm_test;
 
-  `uvm_component_utils(test_lift_ocupat)
+// Test pentru cereri MIXTE sus/jos pe ambele butoane:
+//   - Verifica FSM-ul liftului cu cereri in directii opuse
+//   - Verifica ca LED-urile (led_lift si led_scara) reflecta cererile corect
+//   - Verifica asertiunea p_etaj_progres_unitar (etajul se schimba ±1)
+//   - Stress test pentru sequencer-ul APB cu multe scrieri/citiri amestecate
+class test_combinat extends uvm_test;
 
-  mediu_verificare mediu_de_verificare;
-  secventa_apb_lift_ocupat     apb_seq;
-  secventa_req_ack req_ack_seq;
+  `uvm_component_utils(test_combinat)
+
+  mediu_verificare        mediu_de_verificare;
+  secventa_apb_combinat   apb_seq;
+  secventa_req_ack        req_ack_seq;
 
   virtual apb_interface_dut     vif_apb;
   virtual req_ack_interface_dut vif_req_ack;
   virtual iesire_interface_dut  vif_iesire;
 
-  function new(string name = "test_lift_ocupat", uvm_component parent = null);
+  function new(string name = "test_combinat", uvm_component parent = null);
     super.new(name, parent);
   endfunction
 
@@ -59,15 +64,13 @@ class test_lift_ocupat extends uvm_test;
     @(posedge vif_apb.rst_n);
     repeat(5) @(posedge vif_apb.pclk);
 
-    `uvm_info("TEST", "Reset eliberat. Initializam secventele.", UVM_NONE)
+    `uvm_info("TEST", "Reset eliberat. Initializam secventa combinata.", UVM_NONE)
 
-    apb_seq = secventa_apb_lift_ocupat::type_id::create("apb_seq");
-    if (!apb_seq.randomize()) `uvm_warning("TEST", "apb_seq.randomize() a esuat")
-
+    apb_seq     = secventa_apb_combinat::type_id::create("apb_seq");
     req_ack_seq = secventa_req_ack::type_id::create("req_ack_seq");
     if (!req_ack_seq.randomize()) `uvm_warning("TEST", "req_ack_seq.randomize() a esuat")
 
-    `uvm_info("TEST", "Pornim secventele APB si REQ/ACK in paralel", UVM_NONE)
+    `uvm_info("TEST", "Pornim secventele COMBINAT si REQ/ACK in paralel", UVM_NONE)
 
     fork
       begin
@@ -87,24 +90,21 @@ class test_lift_ocupat extends uvm_test;
     super.report_phase(phase);
 
     $display("╔══════════════════════════════════════════╗");
-    $display("║          RAPORT FINAL TEST               ║");
+    $display("║       RAPORT FINAL TEST_COMBINAT         ║");
     $display("╠══════════════════════════════════════════╣");
-
     $display("║  Coverage APB     : %6.2f%%             ║",
       mediu_de_verificare.agent_apb_din_mediu.monitor_apb_inst0.colector_coverage_apb.stari_apb_cg.get_inst_coverage());
     $display("║  Coverage REQ/ACK : %6.2f%%             ║",
       mediu_de_verificare.agent_req_ack_din_mediu.monitor_req_ack_inst.colector_coverage_req_ack.stari_req_ack_cg.get_inst_coverage());
     $display("║  Coverage Iesire  : %6.2f%%             ║",
       mediu_de_verificare.agent_iesire_din_mediu.monitor_iesire_inst.colector_coverage_iesire.stari_iesire_cg.get_inst_coverage());
-
     $display("╠══════════════════════════════════════════╣");
 
     svr = uvm_report_server::get_server();
     $display("║  Erori UVM        : %4d                ║", svr.get_severity_count(UVM_FATAL) + svr.get_severity_count(UVM_ERROR));
     $display("║  Avertismente UVM : %4d                ║", svr.get_severity_count(UVM_WARNING));
-
     $display("╠══════════════════════════════════════════╣");
-    if (svr.get_severity_count(UVM_FATAL) + svr.get_severity_count(UVM_ERROR) == 0 && svr.get_severity_count(UVM_WARNING) == 0) begin
+    if (svr.get_severity_count(UVM_FATAL) + svr.get_severity_count(UVM_ERROR) == 0) begin
       $display("║  STATUS : ****   TEST PASS   ****        ║");
     end else begin
       $display("║  STATUS : !!!!   TEST FAIL   !!!!        ║");

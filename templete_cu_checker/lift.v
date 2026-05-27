@@ -30,6 +30,14 @@ module lift(
   reg [2:0] current_floor_reg;
   reg [2:0] last_request_floor_reg;
   reg error_reg;
+  reg prev_obstacle_req;
+  // Edge detection pe butoane: capturam doar tranzitiile 0->1
+  // Acest mecanism previne re-declansarea cererilor cat timp registrele APB
+  // persista la o valoare nenula (altfel apare livelock)
+  reg [7:0] prev_buton_scara;
+  reg [7:0] prev_buton_lift;
+  wire [7:0] new_scara_req = buton_scara & ~prev_buton_scara;
+  wire [7:0] new_lift_req  = buton_lift  & ~prev_buton_lift;
   wire door_open = (state == STATE_DOOR_OPEN);
 
   reg [31:0] move_counter;
@@ -104,6 +112,10 @@ module lift(
     floor_management[0]   = door_open;
   end
 
+  always @(*) begin
+    obstacle_ack = obstacle_req & ~prev_obstacle_req;
+  end
+
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       state                  <= STATE_IDLE;
@@ -119,11 +131,26 @@ module lift(
       error_reg              <= 1'b0;
       led_lift               <= 8'b0;
       led_scara              <= 8'b0;
-      obstacle_ack           <= 1'b0;
+      //obstacle_ack           <= 1'b0;
+      prev_obstacle_req      <= 1'b0;
+      prev_buton_scara       <= 8'b0;
+      prev_buton_lift        <= 8'b0;
     end else begin
-      request_reg <= request_reg | buton_scara | buton_lift;
-      led_lift  <= led_lift  | buton_lift;
-      led_scara <= led_scara | buton_scara;
+      prev_obstacle_req <= obstacle_req;
+      prev_buton_scara  <= buton_scara;
+      prev_buton_lift   <= buton_lift;
+
+      // Inregistreaza cereri NOI (doar fronturi ascendente).
+      // Asta previne re-asertia request_reg cat timp registrul APB persista.
+      request_reg <= request_reg | new_scara_req | new_lift_req;
+
+      // Bit 7 = URGENTA, nu un etaj fizic. LED-uri doar pentru etaje 0-6.
+      led_lift  <= led_lift  | (new_lift_req  & 8'h7F);
+      led_scara <= led_scara | (new_scara_req & 8'h7F);
+
+      // Urgenta: front ascendent pe bit 7 al buton_lift declanseaza emergency_stop
+      // (level-trigger ar cauza re-declansare permanenta cat timp registrul APB tine 0x80)
+      if (new_lift_req[7]) emergency_stop <= 1'b1;
 
       if (state == STATE_DOOR_OPEN) begin
         led_lift[current_floor_reg]  <= 1'b0;
@@ -184,9 +211,9 @@ module lift(
           STATE_DOOR_OPEN: begin
             if (obstacle_req) begin
               door_counter <= 0;
-              obstacle_ack <= 1'b1;
+              //obstacle_ack <= 1'b1;
             end else begin
-              obstacle_ack <= 1'b0;
+              //obstacle_ack <= 1'b0;
               if (door_counter < DOOR_OPEN_CYCLES)
                 door_counter <= door_counter + 1;
               else begin

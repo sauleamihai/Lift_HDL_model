@@ -34,17 +34,14 @@ class driver_agent_req_ack extends uvm_driver #(tranzactie_req_ack);
   endtask
   
   task trimiterea_tranzactiei(tranzactie_req_ack informatia_de_transmis);
-    @(posedge interfata_driverului_pentru_req_ack.clk);
+    repeat(informatia_de_transmis.cicli_pana_la_ack)@(posedge interfata_driverului_pentru_req_ack.clk);
     interfata_driverului_pentru_req_ack.obstacle_req <= 1'b1;
 
-    @(posedge interfata_driverului_pentru_req_ack.clk);
+    @(posedge interfata_driverului_pentru_req_ack.clk iff interfata_driverului_pentru_req_ack.obstacle_ack == 1'b1);
     
-    repeat(informatia_de_transmis.durata_obstacol - 1)
-      @(posedge interfata_driverului_pentru_req_ack.clk);
 
     interfata_driverului_pentru_req_ack.obstacle_req <= 1'b0;
 
-    repeat(5) @(posedge interfata_driverului_pentru_req_ack.clk);
   endtask
 endclass
 `endif

@@ -21,20 +21,30 @@ class driver_agent_apb extends uvm_driver #(tranzactie_apb);
 
   virtual task run_phase(uvm_phase phase);
     #100; // VIVADO ZERO-DELAY LOOP KILLER
-    wait(interfata_driverului_pentru_apb.rst_n === 1'b1);
+    forever begin
+    fork
     
-    @(posedge interfata_driverului_pentru_apb.pclk);
+    begin 
+       wait(interfata_driverului_pentru_apb.rst_n === 1'b0);
     interfata_driverului_pentru_apb.psel    <= 1'b0;
     interfata_driverului_pentru_apb.penable <= 1'b0;
     interfata_driverului_pentru_apb.pwrite  <= 1'b0;
     interfata_driverului_pentru_apb.paddr   <= 8'h00;
     interfata_driverului_pentru_apb.pwdata  <= 8'h00;
 
+    end
+
     forever begin
+      
+       wait(interfata_driverului_pentru_apb.rst_n === 1'b1);
       seq_item_port.get_next_item(req);
       trimiterea_tranzactiei(req);
       seq_item_port.item_done();
     end
+  join_any
+  disable fork;
+
+end
   endtask
 
   task trimiterea_tranzactiei(tranzactie_apb informatia_de_transmis);
@@ -57,7 +67,7 @@ class driver_agent_apb extends uvm_driver #(tranzactie_apb);
       informatia_de_transmis.data = interfata_driverului_pentru_apb.prdata;
     end
 
-    @(posedge interfata_driverului_pentru_apb.pclk);
+    //@(posedge interfata_driverului_pentru_apb.pclk);
     interfata_driverului_pentru_apb.psel    <= 1'b0;
     interfata_driverului_pentru_apb.penable <= 1'b0;
     interfata_driverului_pentru_apb.pwrite  <= 1'b0;
