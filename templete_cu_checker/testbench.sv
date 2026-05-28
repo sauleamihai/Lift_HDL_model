@@ -9,6 +9,8 @@ import uvm_pkg::*;
 `include "test_exemplu.sv"
 `include "test_lift_ocupat.sv"
 `include "test_urgenta.sv"
+`include "test_simplu.sv"
+`include "test_req_ack.sv"
 `include "test_citire_registre.sv"
 `include "test_combinat.sv"
 `include "design.sv"
@@ -36,8 +38,6 @@ module top();
     rst_n = 0;
     #100ns;
     rst_n = 1;
-    #5000ns;
-    $finish;
   end
 
   // ── Interfete ──────────────────────────────────────────────────────

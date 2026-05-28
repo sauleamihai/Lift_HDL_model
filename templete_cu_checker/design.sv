@@ -25,8 +25,6 @@ module my_dut (
     output wire        pslverr_o,
 
     // ── REQ/ACK Butoane ────────────────────────────────────────
-    //input  wire [7:0]  buton_lift_i,    // REQ – cereri cabina
-    //input  wire [7:0]  buton_scara_i,   // REQ – cereri scara
     output wire [7:0]  led_lift_o,      // ACK – LED cabina
     output wire [7:0]  led_scara_o,     // ACK – LED scara
 
@@ -50,8 +48,6 @@ module my_dut (
     .PRDATA           (prdata_o),
     .PREADY           (pready_o),
     .PSLVERR          (pslverr_o),
-  //  .buton_lift       (buton_lift_i),
-   // .buton_scara      (buton_scara_i),
     .led_lift         (led_lift_o),
     .led_scara        (led_scara_o),
     .various_signals  (various_signals_o),
